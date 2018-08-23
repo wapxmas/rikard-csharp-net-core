@@ -1,0 +1,120 @@
+﻿@model RentLotWidgetModel
+@{ 
+    var advert = Model.LotModel;
+    var areaFloorsList = new List<string>();
+    areaFloorsList.Add($"{advert.Area:0.0} кв.м.");
+    areaFloorsList.AddRange(advert.Floors);
+    var areaFloorsStr = string.Join(", <br />", areaFloorsList);
+}
+<div class="row">
+    <section class="col-md-4 clearfix">
+        <h2 style="margin-top: 0px;"><a asp-action="RentAdvert" asp-route-id="@advert.Id">@(Model.IsPaid ? advert.AddrString : advert.UnpaidAddr())</a></h2>
+        <ul class="list-unstyled margin-top-10">
+            <li class="hidden-print">
+                <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+                <a asp-action="RentAdvert" asp-route-id="@advert.Id" asp-fragment="advertOnTheMap">Показать на карте</a>
+            </li>
+            <li>
+                <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+                <a asp-action="RentAdvert" asp-route-id="@advert.Id">Подробная информация</a>
+            </li>
+            <li>
+                <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+                <a asp-action="RentAdvert" asp-route-id="@advert.Id" asp-fragment="nearestAdverts">Ближайшие объекты</a>
+            </li>
+            <li>
+                <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+                <a asp-action="RentAdvert" asp-route-id="@advert.Id" asp-fragment="similarAdverts">Похожие объекты</a>
+            </li>
+            <li>
+                <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+                <a asp-action="RentAdvert" asp-route-id="@advert.Id" asp-fragment="environmentInfo">Информация об окружении</a>
+            </li>
+            @if (advert.Files.Count > 0)
+            {
+                <li>Документы объекта:</li>
+
+                foreach (var file in advert.Files)
+                {
+                    <li>
+                        <a asp-action="DownloadRentFile"
+                           asp-route-id="@file.Salt"
+                           asp-route-advid="@advert.Id"
+                           asp-route-lotnum="@advert.LotNum"
+                           asp-route-lotfile="@file.LotFile">
+                            <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                            @file.Name
+                        </a>
+                    </li>
+                }
+            }
+            @if (Model.IsPaid)
+            {
+                <li><small style="text-transform: uppercase">@advert.OrganizationName</small></li>
+            }
+            <li><time class="adv-time" datetime="<?php echo $micro_time; ?>">добавлено @advert.CreatedDate.ToString("yyyy-MM-dd")</time></li>
+        </ul>
+    </section>
+    <div class="col-md-8 clearfix">
+        <div class="row">
+            <div class="col-md-12 clearfix">
+                <div class="row">
+                    <div class="col-md-4 clearfix text-center">
+                        @Html.Raw(areaFloorsStr)
+                    </div>
+                    <div class="col-md-4 clearfix text-center">
+                        аренда на @advert.MakeTermString()
+                    </div>
+                    <div class="col-md-4 clearfix text-center">
+                        @AdvConstants.MissionsListToString(advert.Missions)
+                    </div>
+                </div>
+                <div class="row margin-top-20">
+                    <ul>
+                        @if (advert.Rooms != null)
+                        {
+                            <li>@($"{advert.Rooms} {TextUtilites.GetDeclension(advert.Rooms.Value, "комната", "комнаты", "комнат")}")</li>
+                        }
+                        @if (advert.Rings.Count > 0)
+                        {
+                            switch (advert.Rings.First())
+                            {
+                                case "sadovoe":
+                                    <li>в пределах Садового кольца</li>
+                                    break;
+                                case "ttk":
+                                    <li>в пределах Третьего кольца</li>
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            <li>за МКАДом</li>
+                        }
+                        @if (advert.PricePerMonth > 0 && advert.PricePerYear > 0)
+                        {
+                            <li>аренда в месяц: @TextUtilites.HumanizeNumber(advert.PricePerMonth) руб.</li>
+                            <li>аренда в год: @TextUtilites.HumanizeNumber(advert.PricePerYear) руб.</li>
+                        }
+                        else if (advert.ContractFee > 0)
+                        {
+                            <li>цена за договор: @TextUtilites.HumanizeNumber(advert.ContractFee) руб.</li>
+                        }
+
+                        @if(advert.Missions?.Count == 0 && !string.IsNullOrWhiteSpace(advert.MissionText))
+                        {
+                            <li>Назначение: @advert.MissionText</li>
+                        }
+                        <li>Дата аукциона: @advert.AuctionDate.ToString("yyyy-MM-dd")</li>
+                        <li>Подача документов: до @advert.ExpireDate.ToString("yyyy-MM-dd")</li>
+                        <li>Лот: № @advert.LotNum</li>
+                        @if (!string.IsNullOrWhiteSpace(advert.AuctionPlace) && Model.IsPaid)
+                        {
+                            <li>Место проведения аукциона: @advert.AuctionPlace</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

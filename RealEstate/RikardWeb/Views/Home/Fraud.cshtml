@@ -1,0 +1,15 @@
+﻿@inject IOptions<InfoOptions> infoOptions
+@{
+    ViewBag.Title = "Остерегайтесь мошенников";
+}
+<section class="jumbotron">
+    <h2>Внимание!</h2>
+    <p>
+        В настоящее время действует группа лиц, которая без всякого на то права, использует адреса этого сайта ( <span style="text-decoration: underline">ppa.msk.ru</span> или <span style="text-decoration: underline">rikard.ru</span> ) для предоставления услуг.
+        В последствии заказчики сталкиваются с людьми, не имеющими никакого отношения к компании Рикард-Недвижимость.
+    </p><p class="alert alert-info">Обращаем Ваше внимание, что только по этим телефонам:  @infoOptions.Value.Phone.Complete() и +7 (965) 112-76-53 Вы можете получить качественные заявленные на сайте услуги от нашей компании.</p>
+    <p>Если вы стали жертвой обмана с их стороны и потерпели убытки от их действий просим связаться по телефонам, указанным выше.</p>
+    <p>
+        <a class="btn btn-primary btn-lg" asp-controller="Home" asp-action="SendLetter" role="button" rel="nofollow">Напишите нам!</a>
+    </p>
+</section>

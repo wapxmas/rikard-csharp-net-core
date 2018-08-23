@@ -1,0 +1,55 @@
+﻿{
+  "Info": {
+    "Phone": {
+      "Country": "+7",
+      "Code": "(499)",
+      "Number": "X"
+    },
+    "Email": {
+      "SmtpAddress": "X",
+      "SmtpPort": 465,
+      "EnableSsl": true,
+      "Username": "X",
+      "Password": "X",
+      "From": "X"
+    },
+    "Host": {
+      "Name": "rikard.ru",
+      "Scheme": "https"
+    },
+    "SmsNotifyPhone": "X",
+    "Robokassa": {
+      "Pass1": "X",
+      "Pass2": "X",
+      "MerchantLogin": "X",
+      "HourPrice": 1000.00,
+      "DayPrice": 5000.00,
+      "WeekPrice": 15000.00,
+      "MonthPrice": 40000.00
+    }
+  },
+  "Database": {
+    "MongoDb": {
+      "User": "X",
+      "Password": "X",
+      "Database": "X",
+      "Host": "X"
+    }
+  },
+  "SmsRu": {
+    "Login": "X",
+    "Password": "X",
+    "ApiId": "X",
+    "PartnerId": "",
+    "From": "X",
+    "Translit": false,
+    "Test": false
+  },
+  "Adverts": {
+    "RootDirectory": "X",
+    "NfsDirectory": "Nfs",
+    "FilesDirectory": "Files",
+    "RentDirectory": "Rent",
+    "AdvertsPerPage": 25
+  }
+}

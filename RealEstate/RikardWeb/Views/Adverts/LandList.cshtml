@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.Title = "Земельные участки от города Москвы";
+
+    string district = Context?.Request?.Query?["district"].FirstOrDefault();
+    string area = Context?.Request?.Query?["area"].FirstOrDefault();
+    string purpose = Context?.Request?.Query?["purpose"].FirstOrDefault();
+    string floor = Context?.Request?.Query?["floor"].FirstOrDefault();
+    string location = Context?.Request?.Query?["location"].FirstOrDefault();
+    string page = Context?.Request?.Query?["page"].FirstOrDefault();
+
+    ViewBag.Title = SEOHelpers.MakeTitle(ViewBag.Title, district, area, purpose, floor, location, page);
+}
+<div class="row">
+    <div class="col-md-3 hidden-print">
+        @await Component.InvokeAsync("AdvNav")
+    </div>
+    <section class="col-md-9">
+        @await Component.InvokeAsync("AdvListHeader", new { title = ViewBag.Title })
+        <div><p>&nbsp;</p></div>
+        <!-- Adverts list -->
+        <div class="alert alert-info" role="alert">Объектов - нет.</div>
+        <!-- Pagination -->
+    </section>
+</div>

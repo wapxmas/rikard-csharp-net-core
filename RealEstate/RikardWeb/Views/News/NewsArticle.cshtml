@@ -1,0 +1,49 @@
+﻿@model NewsDbModel
+@inject INewsDatabaseService newsDatabaseService
+@{
+    ViewBag.Title = Model.Header;
+}
+<div class="row">
+    <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1 col-xs-12 margin-top-20">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <article itemscope itemtype="http://schema.org/Article" class="indent-article">
+                    <header class="padding-bottom-15">
+                        <h1 class="text-center" itemprop="headline">@ViewBag.Title</h1>
+                        <time datetime="@Model.Date.ToString("yyyy-MM-dd")" itemprop="datePublished">
+                            @TextUtilites.DateTimeToHuman(Model.Date)
+                        </time>
+                    </header>
+                    @foreach(var s in Model.Text.SplitNoEmpty(new char[] { '\r', '\n' }))
+                    {
+                        <p>@s</p>
+                    }
+                    <footer>
+                        <p>
+                            <a href="@Model.Url">Источник</a>
+                        </p>
+                    </footer>
+                </article>
+                @if(Model.Similar != null && Model.Similar.Count > 0)
+                {
+                    <aside>
+                        <h2>Новости схожей тематики</h2>
+                        <ul class="listSection list-unstyled">
+                            @foreach (var g in Model.Similar.Take(5))
+                            {
+                                var n = await newsDatabaseService.GetNewsArticleByGuid(g.Guid);
+
+                                if (n != null)
+                                {
+                                    <li>
+                                        <a asp-route="newsArticle" asp-route-article="@n.Guid">@n.Header</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </aside>
+                }
+            </div>
+        </div>
+    </div>
+</div>

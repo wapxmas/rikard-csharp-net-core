@@ -1,0 +1,59 @@
+﻿@model AdvPagesNavModel
+@{ 
+    string district = Context?.Request?.Query?["district"].FirstOrDefault();
+    string area = Context?.Request?.Query?["area"].FirstOrDefault();
+    string purpose = Context?.Request?.Query?["purpose"].FirstOrDefault();
+    string floor = Context?.Request?.Query?["floor"].FirstOrDefault();
+    string location = Context?.Request?.Query?["location"].FirstOrDefault();
+    string page = Context?.Request?.Query?["page"].FirstOrDefault();
+
+    int.TryParse(page, out int _page);
+
+    if(_page == 0)
+    {
+        _page = 1;
+    }
+
+    string action = ViewContext.RouteData?.Values?["action"] as string;
+}
+<nav class="text-center hidden-print">
+    <ul class="pagination">
+        <li>
+            @if (_page > 1)
+            {
+                <a href="@MakeUrl(district, area, purpose, floor, location, action, $"{_page - 1}")">
+                    <span class="text-uppercase" aria-hidden="true">&larr;</span>
+                </a>
+            }
+            else
+            {
+                <a>
+                    <span class="text-uppercase" aria-hidden="true">&larr;</span>
+                </a>
+            }
+        </li>
+        <li class="active">
+            <a>@_page</a>
+        </li>
+        <li>
+            @if (Model.IsNextPageExists)
+            {
+                <a href="@MakeUrl(district, area, purpose, floor, location, action, $"{_page + 1}")">
+                    <span class="text-uppercase" aria-hidden="true">&rarr;</span>
+                </a>
+            }
+            else
+            {
+                <a>
+                    <span class="text-uppercase" aria-hidden="true">&rarr;</span>
+                </a>
+            }
+        </li>
+    </ul>
+</nav>
+@functions {
+    string MakeUrl(string district, string area, string purpose, string floor, string location, string action, string page)
+    {
+        return Url.Action(action, new { district = district, area = area, purpose = purpose, floor = floor, location = location, page = page == "1" ? null : page });
+    }
+}

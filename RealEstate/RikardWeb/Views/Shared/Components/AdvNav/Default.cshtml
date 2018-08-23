@@ -1,0 +1,129 @@
+﻿@{
+    string district = Context?.Request?.Query?["district"].FirstOrDefault();
+    string area = Context?.Request?.Query?["area"].FirstOrDefault();
+    string purpose = Context?.Request?.Query?["purpose"].FirstOrDefault();
+    string floor = Context?.Request?.Query?["floor"].FirstOrDefault();
+    string location = Context?.Request?.Query?["location"].FirstOrDefault();
+
+    string action = ViewContext.RouteData?.Values?["action"] as string;
+}
+<div class="row">
+    <nav class="col-md-12">
+        <div class="row">
+            <section class="col-md-12">
+                <h3>Округ</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled list-padding-bottom">
+                            @foreach (var d in AdvConstants.Districts.Take(6))
+                            {
+                                <li class="@(district == d ? "selected-main-li" : "")">
+                                    <a href="@MakeUrl(d, area, purpose, floor, location, action)">@d</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <nav class="col-md-6">
+                        <ul class="list-unstyled list-padding-bottom">
+                            @foreach (var d in AdvConstants.Districts.Skip(6))
+                            {
+                                <li class="@(district == d ? "selected-main-li" : "")">
+                                    <a href="@MakeUrl(d, area, purpose, floor, location, action)">@d</a>
+                                </li>
+                            }
+                            <li class="@(string.IsNullOrWhiteSpace(district) ? "selected-main-li" : "")">
+                                <a href="@MakeUrl(null, area, purpose, floor, location, action)">любой</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </section>
+        </div>
+        <div class="row">
+            <section class="col-md-12">
+                <h3>Расположение</h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="list-unstyled list-padding-bottom">
+                            @foreach (var loc in AdvConstants.Locations)
+                            {
+                                <li class="@(location == loc.Code ? "selected-main-li" : "")">
+                                    <a href="@MakeUrl(district, area, purpose, floor, loc.Code, action)">@loc.Name</a>
+                                </li>
+                            }
+                            <li class="@(string.IsNullOrWhiteSpace(location) ? "selected-main-li" : "")">
+                                <a href="@MakeUrl(district, area, purpose, floor, null, action)">любое</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="row">
+            <section class="col-md-12">
+                <h3>Площадь</h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="list-unstyled list-padding-bottom">
+                            @foreach (var a in AdvConstants.Areas)
+                            {
+                                <li class="@(area == a ? "selected-main-li" : "")">
+                                    <a href="@MakeUrl(district, a, purpose, floor, location, action)">@a</a>
+                                </li>
+                            }
+                            <li class="@(string.IsNullOrWhiteSpace(area) ? "selected-main-li" : "")">
+                                <a href="@MakeUrl(district, null, purpose, floor, location, action)">любая</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="row">
+            <section class="col-md-12">
+                <h3>Этаж</h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="list-unstyled list-padding-bottom">
+                            @foreach (var a in AdvConstants.Floors)
+                            {
+                                <li class="@(floor == a ? "selected-main-li" : "")">
+                                    <a href="@MakeUrl(district, area, purpose, a, location, action)">@a</a>
+                                </li>
+                            }
+                            <li class="@(string.IsNullOrWhiteSpace(floor) ? "selected-main-li" : "")">
+                                <a href="@MakeUrl(district, area, purpose, null, location, action)">любой</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="row">
+            <section class="col-md-12">
+                <h3>Назначение</h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <ul class="list-unstyled list-padding-bottom">
+                            @foreach (var p in AdvConstants.Purposes)
+                            {
+                                <li class="@(purpose == p.Text ? "selected-main-li" : "")">
+                                    <a href="@MakeUrl(district, area, p.Text, floor, location, action)">@p.Text</a>
+                                </li>
+                            }
+                            <li class="@(string.IsNullOrWhiteSpace(purpose) ? "selected-main-li" : "")">
+                                <a href="@MakeUrl(district, area, null, floor, location, action)">любое</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </nav>
+</div>
+@functions {
+    string MakeUrl(string district, string area, string purpose, string floor, string location, string action)
+    {
+        return Url.Action(action, new { district = district, area = area, purpose = purpose, floor = floor, location = location });
+    }
+}

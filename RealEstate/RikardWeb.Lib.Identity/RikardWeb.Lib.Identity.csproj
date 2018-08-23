@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\RikardLib\RikardLib.AspLog\RikardLib.AspLog.csproj" />
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Parallel\RikardLib.Parallel.csproj" />
+    <ProjectReference Include="..\RikardWeb.Lib.Db\RikardWeb.Lib.Db.csproj" />
+  </ItemGroup>
+
+</Project>

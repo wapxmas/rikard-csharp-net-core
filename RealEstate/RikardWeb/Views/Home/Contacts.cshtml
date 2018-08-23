@@ -1,0 +1,35 @@
+﻿@inject IOptions<InfoOptions> infoOptions
+@{
+    ViewBag.Title = "Контакты";
+}
+<section>
+    <h1 class="text-center">Контакты</h1>
+    <div class="row">
+        <div class="col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-sm-8 col-sm-offset-2 col-xs-10 col-xs-offset-1">
+            <address>
+                <div>
+                    <span>
+                        Телефон:
+                    </span>
+                    <a href="tel:@infoOptions.Value.Phone.PlainPhone()">
+                        @infoOptions.Value.Phone.PhoneHtmlBoldNoCountry()
+                    </a>
+                </div><div style="margin-top: 15px;">Адрес: 109012, Россия, Москва, улица Ильинка, 4</div>
+                <div style="margin-top: 15px;">
+                    Электронная почта: <a href="mailto:info@rikard.ru">info@rikard.ru</a>
+                </div>
+            </address>
+            <div style="margin-top: 15px;">
+                <span>Мы в социальных сетях и лентах:</span>
+                <ul class="list-unstyled" style="padding-left: 20px; padding-top: 5px;">
+                    <li style="margin-top: 5px;">
+                        &mdash; <a href="https://www.facebook.com/rikard.ru" target="_blank">Facebook</a>
+                    </li>
+                    <li style="margin-top: 5px;">
+                        &mdash; <a href="https://twitter.com/rikard_ru" target="_blank">Twitter</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

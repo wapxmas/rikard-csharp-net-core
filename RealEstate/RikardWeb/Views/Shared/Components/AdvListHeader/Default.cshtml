@@ -1,0 +1,36 @@
+﻿@model string
+@{
+    string district = Context?.Request?.Query?["district"].FirstOrDefault();
+    string area = Context?.Request?.Query?["area"].FirstOrDefault();
+    string purpose = Context?.Request?.Query?["purpose"].FirstOrDefault();
+    string floor = Context?.Request?.Query?["floor"].FirstOrDefault();
+    string location = Context?.Request?.Query?["location"].FirstOrDefault();
+
+    string action = ViewContext.RouteData?.Values?["action"] as string;
+}
+<h1 class="text-center">@Model</h1>
+<nav class="row margin-top-20 hidden-print">
+    <div class="col-md-4 col-sm-4 col-xs-4 text-center">
+        <span class="glyphicon glyphicon-eye-open glyph-color-green" aria-hidden="true"></span> <a href="javascript:void(0)" onclick="document.location.href='@Url.Action(action)';"><span>Показать все</span></a>
+    </div>
+    <div class="col-md-4 col-sm-4 col-xs-4 text-center">
+        @if (action.EndsWith("Map"))
+        {
+            <span class="glyphicon glyphicon-globe glyph-color-green" aria-hidden="true"></span> <a href="@MakeUrl(district, area, purpose, floor, location, action.RemoveFromEnd("Map"))"><span>Убрать карту</span></a>
+        }
+        else
+        {
+            <span class="glyphicon glyphicon-globe glyph-color-green" aria-hidden="true"></span> <a href="@(MakeUrl(district, area, purpose, floor, location, action.EndsWith("Map") ? action : $"{action}Map"))"><span>Список на карте</span></a>
+        }
+    </div>
+    <div class="col-md-4 col-sm-4 col-xs-4 text-center">
+        <span class="glyphicon glyphicon-print glyph-color-green" aria-hidden="true"></span> <a href="javascript:window.print()"><span>Печать списка</span></a>
+    </div>
+</nav>
+<hr>
+@functions {
+    string MakeUrl(string district, string area, string purpose, string floor, string location, string action)
+    {
+        return Url.Action(action, new { district = district, area = area, purpose = purpose, floor = floor, location = location });
+    }
+}

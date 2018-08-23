@@ -1,0 +1,163 @@
+﻿@model IdentityUser
+@inject IOptions<InfoOptions> infoOptions
+@inject IAspLogger logger
+@{
+    ViewBag.Title = "Личный кабинет";
+    var TestDateLimit = Model.CreatedDate.Add(new TimeSpan(1, 0, 0, 0));
+    var IsTestPeriod = TestDateLimit > DateTime.Now && !User.IsInRole("Admin");
+    DateTime? ServiceExpired = Model.Balance?.ServiceExpired;
+    if(IsTestPeriod)
+    {
+        ServiceExpired = TestDateLimit;
+    }
+}
+@if (ViewBag.SuccessfulPay)
+{
+    <div class="alert alert-success" role="alert">Платеж зачислен успешно! <a asp-action="Index" style="font-weight:bold;">OK</a></div>
+}
+<div class="panel panel-default">
+    <div class="panel-heading">Личный кабинет</div>
+    <div class="panel-body">
+        <ul class="list-unstyled">
+            <li>
+                Оплачено до:
+                @if (!ServiceExpired.HasValue || ServiceExpired < DateTime.Now)
+                {
+                    <strong>требует оплаты</strong>
+                }
+                else
+                {
+                    if (IsTestPeriod)
+                    {
+                        <strong>пробный период</strong>
+                    }
+                    else
+                    {
+                        @ServiceExpired.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                    }
+                }
+            </li>
+            @if (ServiceExpired.HasValue && ServiceExpired > DateTime.Now)
+            {
+                var rem = ServiceExpired.Value.Subtract(DateTime.Now);
+
+                <li style="margin-top: 5px;">
+                    Осталось: @($"дней: {rem.Days}, часов: {rem.Hours}, минут: {rem.Minutes}")
+                </li>
+            }
+            <li style="margin-top: 5px;">
+                Телефон: @Model.PhoneNumber
+            </li>
+            <li style="margin-top: 5px;">
+                E-Mail: @Model.Email
+            </li>
+            @if (!IsTestPeriod)
+            {
+                <li style="margin-top: 5px;">
+                    <a class="btn btn-primary" href="@GetRobokassaUrl("hour")" target="_blank">@($"Оплатить 1 час — {infoOptions.Value.Robokassa.HourPrice:N2} руб.")</a>
+                </li>
+                <li style="margin-top: 5px;">
+                    <a class="btn btn-primary" href="@GetRobokassaUrl("day")" target="_blank">@($"Оплатить 1 сутки — {infoOptions.Value.Robokassa.DayPrice:N2} руб.")</a>
+                </li>
+                <li style="margin-top: 5px;">
+                    <a class="btn btn-primary" href="@GetRobokassaUrl("week")" target="_blank">@($"Оплатить 1 неделю — {infoOptions.Value.Robokassa.WeekPrice:N2} руб.")</a>
+                </li>
+                <li style="margin-top: 5px;">
+                    <a class="btn btn-primary" href="@GetRobokassaUrl("month")" target="_blank">@($"Оплатить 1 месяц — {infoOptions.Value.Robokassa.MonthPrice:N2} руб.")</a>
+                </li>
+            }
+        </ul>
+        @if (!IsTestPeriod)
+        {
+            <table class="table table-responsive">
+                <thead>
+                    <tr>
+                        <th>Сумма</th>
+                        <th>Тип</th>
+                        <th>Описание</th>
+                        <th>Дата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var pays = Model?.Balance?.Pays;
+                        if (pays != null)
+                        {
+                            foreach (var p in pays)
+                            {
+                                <tr>
+                                    <td>@p.Amount.ToString("N2")</td>
+                                    <td>@GetTypeAsText(p.Type)</td>
+                                    <td>@p.Description</td>
+                                    <td>@p.Date.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+         }
+    </div>
+    <div class="panel-footer"><a asp-action="Logout">Выйти</a></div>
+</div>
+@functions {
+    string GetTypeAsText(string type)
+    {
+        switch (type.ToLower())
+        {
+            case "hour":
+                return "1 час";
+            case "day":
+                return "1 сутки";
+            case "week":
+                return "1 неделю";
+            case "month":
+                return "1 месяц";
+            default:
+                return "unknown";
+        }
+    }
+
+    string GetRobokassaUrl(string type)
+    {
+        double nOutSum;
+        string sDesc;
+
+        switch (type.ToLower())
+        {
+            case "hour":
+                nOutSum = infoOptions.Value.Robokassa.HourPrice;
+                sDesc = $"Оплата сервиса на 1 час";
+                break;
+            case "day":
+                nOutSum = infoOptions.Value.Robokassa.DayPrice;
+                sDesc = $"Оплата сервиса на 1 сутки";
+                break;
+            case "week":
+                nOutSum = infoOptions.Value.Robokassa.WeekPrice;
+                sDesc = $"Оплата сервиса на 1 неделю";
+                break;
+            case "month":
+                nOutSum = infoOptions.Value.Robokassa.MonthPrice;
+                sDesc = $"Оплата сервиса на 1 месяц";
+                break;
+            default:
+                throw new ArgumentException($"type have got incorrect value: {type}");
+        }
+
+        string sOutSum = nOutSum.ToString("0.00", CultureInfo.InvariantCulture);
+        string sMrchLogin = infoOptions.Value.Robokassa.MerchantLogin;
+        string sMrchPass1 = infoOptions.Value.Robokassa.Pass1;
+        string Shp_id = Model.Id;
+        string Shp_type = type.ToLower();
+        string sCrc = TextUtilites.MD5Hash($"{sMrchLogin}:{sOutSum}::{sMrchPass1}:Shp_id={Shp_id}:Shp_type={Shp_type}");
+        return "https://auth.robokassa.ru/Merchant/Index.aspx?" +
+                                    "MrchLogin=" + sMrchLogin +
+                                    "&InvDesc=" + WebUtility.UrlEncode(sDesc) +
+                                    "&Encoding=" + "utf-8" +
+                                    "&OutSum=" + sOutSum +
+                                    "&Shp_id=" + Shp_id +
+                                    "&Shp_type=" + Shp_type +
+                                    "&SignatureValue=" + sCrc;
+    }
+}

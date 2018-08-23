@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = "Управление базой данных";
+
+    var Message = Context.Session.PopString("Message");
+}
+
+<h1 class="text-center">Управление базой данных</h1>
+
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert alert-info" role="alert">@Message</div>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">Панель базы данных</div>
+    <div class="panel-body">
+        <ul class="list-unstyled">
+            <li>
+                <a asp-action="DatabaseAdvertsUpdate" class="btn btn-primary">Запустить обновление объявлений</a>
+            </li>
+        </ul>
+    </div>
+</div>

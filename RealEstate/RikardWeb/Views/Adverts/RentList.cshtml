@@ -1,0 +1,76 @@
+﻿@inject IOptions<AdvertsOptions> advertsOptions
+@inject IAdvertsDatabaseService advertsService
+@inject IAuthorizationService authorizationService
+@{
+    ViewBag.Title = "Аренда от города Москвы";
+
+    string district = Context?.Request?.Query?["district"].FirstOrDefault();
+    string area = Context?.Request?.Query?["area"].FirstOrDefault();
+    string purpose = Context?.Request?.Query?["purpose"].FirstOrDefault();
+    string floor = Context?.Request?.Query?["floor"].FirstOrDefault();
+    string location = Context?.Request?.Query?["location"].FirstOrDefault();
+    string page = Context?.Request?.Query?["page"].FirstOrDefault();
+
+    ViewBag.Title = SEOHelpers.MakeTitle(ViewBag.Title, district, area, purpose, floor, location, page);
+
+    int.TryParse(page, out int _page);
+
+    if (_page == 0)
+    {
+        _page = 1;
+    }
+
+    var adverts = await advertsService.GetAdRentLots(
+        new AdvRentSearchModel
+        {
+            Disctrict = district,
+            Area = area,
+            Purpose = purpose,
+            Floor = floor,
+            Location = location
+        },
+        advertsOptions.Value.AdvertsPerPage * (_page - 1),
+        advertsOptions.Value.AdvertsPerPage + 1);
+
+    bool isNextPageExists = adverts.Count > advertsOptions.Value.AdvertsPerPage;
+
+    if (isNextPageExists)
+    {
+        adverts.RemoveAt(adverts.Count - 1);
+    }
+
+    bool isPaid = await authorizationService.AuthorizeAsync(User, "Paid");
+}
+<div class="row">
+    <div class="col-md-3 hidden-print">
+        @await Component.InvokeAsync("AdvNav")
+    </div>
+    <section class="col-md-9">
+        @await Component.InvokeAsync("AdvListHeader", new { title = ViewBag.Title })
+        <!-- Adverts list -->
+        @if (adverts.Count > 0)
+        {
+            @foreach (var adv in adverts)
+            {
+                @await Component.InvokeAsync("AdvRentWidget", new { lotModel = adv, isPaid = isPaid })
+                <div><p>&nbsp;</p></div>
+            }
+
+            <!-- Pagination -->
+            @await Component.InvokeAsync("AdvPagesNav", new { isNextPageExists = isNextPageExists })
+        }
+        else
+        {
+            @if (!string.IsNullOrWhiteSpace(district) ||
+                       !string.IsNullOrWhiteSpace(area) ||
+                       !string.IsNullOrWhiteSpace(purpose))
+            {
+                <div class="alert alert-info" role="alert">Объектов с выбранными параметрами - нет.</div>
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">Объектов - нет.</div>
+            }
+        }
+    </section>
+</div>

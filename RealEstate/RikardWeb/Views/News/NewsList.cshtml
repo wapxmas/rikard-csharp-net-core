@@ -1,0 +1,77 @@
+﻿@model int
+@inject INewsDatabaseService newsService
+@{
+    ViewBag.Title = "Новости торгов";
+
+    int MAX_NEWS_ON_PAGE = 10;
+    int page = Model;
+
+    long total = await newsService.GetTotalNewsNumber();
+
+    IEnumerable<NewsDbModel> news;
+
+    int reminder = (int)(total % MAX_NEWS_ON_PAGE);
+    int quantity = reminder < MAX_NEWS_ON_PAGE ? reminder + MAX_NEWS_ON_PAGE : reminder;
+    int totalPages = (int)((total - quantity) / MAX_NEWS_ON_PAGE) + 1;
+    int skip = page > 0 ? ((totalPages - page - 1) * MAX_NEWS_ON_PAGE) + quantity : 0;
+
+    if(page > totalPages || page < 0)
+    {
+        total = 0;
+    }
+
+    if (total < MAX_NEWS_ON_PAGE * 2)
+    {
+        news = await newsService.GetLatestNewsArticles((MAX_NEWS_ON_PAGE * 2) - 1, 0);
+    }
+    else
+    {
+        news = await newsService.GetLatestNewsArticles(page == 0 ? quantity : MAX_NEWS_ON_PAGE, skip);
+    }
+
+    page = page == 0 ? totalPages : page;
+
+    int prevPage = page + 1;
+    int currentPage = page;
+    int nextPage = page - 1;
+}
+<div class="row">
+    <div class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-10 col-sm-offset-1 col-xs-12">
+        <div class="row">
+            <section class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h1 class="text-center">@ViewBag.Title</h1>
+                <ul class="listSection list-unstyled">
+                    @if (news.Count() > 0)
+                    {
+                        DateTime? Date = null;
+
+                        @foreach (var n in news)
+                        {
+                            if (Date != n.Date)
+                            {
+                                var sDateAttrib = n.Date.ToString("yyyy-MM-dd");
+                                var sDateHuman = TextUtilites.DateTimeToHuman(n.Date);
+                                <li>
+                                    <time datetime="@sDateAttrib">@sDateHuman</time>
+                                </li>
+                                Date = n.Date;
+                            }
+                            <li>
+                                <a asp-route="newsArticle" asp-route-article="@n.Guid">@n.Header</a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </section>
+        </div>
+    </div>
+</div>
+@await Component.InvokeAsync("PagesNav", new
+{
+    controller = "News",
+    action = "NewsList",
+    prevPage = prevPage,
+    currentPage = currentPage,
+    nextPage = nextPage,
+    totalPages = totalPages
+})

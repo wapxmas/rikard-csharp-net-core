@@ -1,0 +1,30 @@
+﻿@{
+    string controller = ViewContext.RouteData?.Values?["controller"] as string ?? "";
+    string action = ViewContext.RouteData?.Values?["action"] as string ?? "";
+}
+<nav class="hidden-print">
+    <ul class="nav nav-tabs nav-justified">
+        <li class="@(action == "RentList" || action == "RentListMap" ? "active" : "")" role="presentation">
+            <a asp-controller="Adverts" asp-action="RentList">Аренда от города Москвы</a>
+        </li>
+        <li class="hidden-xs @(action == "PropertyList" || action == "PropertyListMap" ? "active" : "")" role="presentation">
+            <a asp-controller="Adverts" asp-action="PropertyList">Собственность от города Москвы</a>
+        </li>
+        <li class="hidden-xs hidden-sm @(action == "LandList" || action == "LandListMap" ? "active" : "")" role="presentation">
+            <a asp-controller="Adverts" asp-action="LandList">Земельные участки от города Москвы</a>
+        </li>
+        <li class="dropdown hidden-md hidden-lg">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Ещё <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu menu-white-link">
+                <li class="hidden-sm @(action == "PropertyList" || action == "PropertyListMap" ? "active" : "")" role="presentation">
+                    <a asp-controller="Adverts" asp-action="PropertyList">Собственность от города Москвы</a>
+                </li>
+                <li class="@(action == "LandList" || action == "LandListMap" ? "active" : "")">
+                    <a asp-controller="Adverts" asp-action="LandList">Земельные участки от города Москвы</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>

@@ -1,0 +1,19 @@
+open ppamskru@138.201.91.141
+call mkdir -p rikardweb
+cd rikardweb
+echo "Removing old dist"
+call rm -fR ./dist
+echo "Putting new dist.tgz"
+put dist.tgz
+echo "Unpacking dist.tgz"
+call tar xvf dist.tgz
+echo "Removing dist.tgz"
+rm dist.tgz
+cd dist
+call find . -type d -exec chmod 755 {} \;
+call find . -type f -exec chmod 644 {} \;
+cd ..
+echo "Put run.sh and set permissions on it"
+put run.sh
+call chmod a+x run.sh
+exit

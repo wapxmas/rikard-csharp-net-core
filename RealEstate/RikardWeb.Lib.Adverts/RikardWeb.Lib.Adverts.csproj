@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.1.2" />
+    <PackageReference Include="MimeTypesMap" Version="1.0.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Geo\RikardLib.Geo.csproj" />
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Log\RikardLib.Log.csproj" />
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Maths\RikardLib.Maths.csproj" />
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Parallel\RikardLib.Parallel.csproj" />
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Text\RikardLib.Text.csproj" />
+    <ProjectReference Include="..\..\RikardLib\RikardLib.Web\RikardLib.Web.csproj" />
+    <ProjectReference Include="..\RikardWeb.Lib.Db\RikardWeb.Lib.Db.csproj" />
+  </ItemGroup>
+
+</Project>

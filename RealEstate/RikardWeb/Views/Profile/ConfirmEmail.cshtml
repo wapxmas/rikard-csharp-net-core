@@ -1,0 +1,35 @@
+﻿@model string
+
+<section class="jumbotron">
+    @switch (Model)
+    {
+        case "Incorrect":
+            <h2>Ошибка активации:</h2>
+            <p>Неверный адрес активации</p>
+            <p>
+                <a class="btn btn-primary btn-lg" href="/" role="button">Перейти на главную</a>
+            </p>
+            break;
+        case "NoUser":
+            <h2>Ошибка активации:</h2>
+            <p>Неверный или устаревший адрес активации</p>
+            <p>
+                <a class="btn btn-primary btn-lg" href="/" role="button">Перейти на главную</a>
+            </p>
+            break;
+        case "Confirm":
+            <h2>Успешно!</h2>
+            <p>Вы успешно активировали свой E-Mail</p>
+            <p>
+                <a asp-controller="Profile" asp-action="Login" class="btn btn-primary btn-lg" role="button">Перейти на страницу входа</a>
+            </p>
+            break;
+        default:
+            <h2>Ошибка активации:</h2>
+            <div asp-validation-summary="All"></div>
+            <p>
+                <a class="btn btn-primary btn-lg" href="/" role="button">Перейти на главную</a>
+            </p>
+            break;
+    }
+</section>

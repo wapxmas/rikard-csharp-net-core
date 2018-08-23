@@ -1,0 +1,68 @@
+﻿@inject IAdvertsDatabaseService advertsService
+@inject IAuthorizationService authorizationService
+@{
+    ViewBag.Title = "Аренда от города Москвы на карте";
+
+    string district = Context?.Request?.Query?["district"].FirstOrDefault();
+    string area = Context?.Request?.Query?["area"].FirstOrDefault();
+    string purpose = Context?.Request?.Query?["purpose"].FirstOrDefault();
+    string floor = Context?.Request?.Query?["floor"].FirstOrDefault();
+    string location = Context?.Request?.Query?["location"].FirstOrDefault();
+    string page = Context?.Request?.Query?["page"].FirstOrDefault();
+
+    ViewBag.Title = SEOHelpers.MakeTitle(ViewBag.Title, district, area, purpose, floor, location, page);
+
+    var adverts = await advertsService.GetAdRentLots(
+        new AdvRentSearchModel
+        {
+            Disctrict = district,
+            Area = area,
+            Purpose = purpose,
+            Floor = floor,
+            Location = location
+        }, /* skip */ 0, /* limit */ 0);
+
+    var isPaid = await authorizationService.AuthorizeAsync(User, "Paid");
+}
+
+<div class="row">
+    <div class="col-md-3 hidden-print">
+        @await Component.InvokeAsync("AdvNav")
+    </div>
+    <section class="col-md-9">
+        @await Component.InvokeAsync("AdvListHeader", new { title = ViewBag.Title })
+        <!-- Adverts map -->
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div id="YMapsID" style="height:950px;" class="margin-top-20"></div>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;key=AKZ6GFcBAAAAxvCmGwIAQZAo0uyaJny5TR38Km8N1FWVui8AAAAAAAAAAABZRYzW1j9v9SblERAsLa6S-QWTLA==" type="text/javascript"></script>
+<script type="text/javascript">
+
+    ymaps.ready(function () {
+        var myMap = new ymaps.Map("YMapsID", {
+            center: [55.76, 37.64],
+            zoom: 10,
+            type: "yandex#map",
+            controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
+        });
+
+        @foreach(var advert in adverts)
+        {
+            @: var link_@advert.Id.Replace('-', '_') = '@Html.Raw($"<a href=\"{Url.Action("RentAdvert", new { id = advert.Id })}\" target=\"_blank\">перейти&nbsp;&rarr;</a>")';
+        <text>
+            myMap.geoObjects.add(new ymaps.Placemark([@($"{advert.GeoPoint.Coordinates.Latitude}, {advert.GeoPoint.Coordinates.Longitude}")],
+            {
+                balloonContent: '@($"{advert.Area:0.##} кв.м., {AdvConstants.MissionsListToString(advert.Missions)}, {advert.JustAddrString(isPaid)}"), ' + link_@advert.Id.Replace('-', '_')
+            },
+            {
+                preset: 'islands#icon',
+                iconColor: '#0095b6'
+            }));
+        </text>
+        }
+    });
+</script>

@@ -1,0 +1,45 @@
+﻿@model PagesNavModel
+<nav class="text-center hidden-print">
+    <ul class="pagination">
+        <li>
+            @if (Model.PrevPage >= Model.TotalPages)
+            {
+                @if (Model.PrevPage == Model.TotalPages)
+                {
+                    <a asp-controller="@Model.Controller" asp-action="@Model.Action" asp-route-page="">
+                        <span class="text-uppercase" aria-hidden="true">&larr;</span>
+                    </a>
+                }
+                else
+                {
+                    <a>
+                        <span class="text-uppercase" aria-hidden="true">&larr;</span>
+                    </a>
+                }
+            }
+            else
+            {
+                <a asp-controller="@Model.Controller" asp-action="@Model.Action" asp-route-page="@Model.PrevPage">
+                    <span class="text-uppercase" aria-hidden="true">&larr;</span>
+                </a>
+            }
+        </li>
+        <li class="active">
+            <a>@Model.CurrentPage</a>
+        </li>
+        <li>
+            @if (Model.NextPage <= 0)
+            {
+                <a>
+                    <span class="text-uppercase" aria-hidden="true">&rarr;</span>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="@Model.Controller" asp-action="@Model.Action" asp-route-page="@Model.NextPage">
+                    <span class="text-uppercase" aria-hidden="true">&rarr;</span>
+                </a>
+            }
+        </li>
+    </ul>
+</nav>

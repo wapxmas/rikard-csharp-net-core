@@ -1,0 +1,301 @@
+﻿@model AdRentLotModel
+@inject SignInManager<IdentityUser> signInManager
+@inject IAdvertsDatabaseService advertsDatabaseService
+@inject IAuthorizationService authorizationService
+@{
+    var subtitle = "Аренда от города Москвы";
+    ViewBag.Title = $"{subtitle} {Model.AddrString}";
+    var nearestAdverts = await advertsDatabaseService.GetNearestAdRentLot(Model, 5);
+    var similarAdverts = await advertsDatabaseService.GetSimilarAdRentLot(Model, 5);
+    var isPaid = await authorizationService.AuthorizeAsync(User, "Paid");
+}
+<div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-sm-10 col-sm-offset-1 col-xs-12">
+        <h1 class="text-center">@subtitle</h1>
+        <h2 class="text-center">@(isPaid ? Model.AddrString : Model.UnpaidAddr())</h2>
+        <section class="panel panel-default">
+            @if (isPaid)
+            {
+                <div class="panel-heading">
+                    <div class="panel-title text-center"><small style="text-transform: uppercase">@Model.OrganizationName</small></div>
+                </div>
+            }
+            <div class="panel-body">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <dl class="dl-horizontal">
+                                <dt>Округ</dt>
+                                <dd>@Model.RegionFullName (@Model.RegionAbbr)</dd>
+                                <dt>Район</dt>
+                                <dd>@Model.DistrictName</dd>
+                                @if (isPaid)
+                                {
+                                    <dt>Адрес</dt>
+                                    <dd>@Model.JustAddrString()</dd>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.MetroName))
+                                {
+                                    <dt>Метро</dt>
+                                    <dd>@Model.MetroName (@Model.MetroLine)</dd>
+                                    <dt>Расстояние</dt>
+                                    <dd>
+                                        <div>
+                                            до метро — @($"{Model.DistanceTowardsMetroEntrance:0} м.") (@Model.MetroEntrance)
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(Model.StationName))
+                                        {
+                                            <div>
+                                                до остановки ОТ — @($"{Model.DistanceTowardsStation:0} м."), &laquo;@Model.StationName&raquo; (@Model.StationDirection), маршруты @Model.StationRoutes
+                                            </div>
+                                        }
+                                    </dd>
+                                }
+                                @if (Model.Floors.Count > 0)
+                                {
+                                    <dt>Этаж</dt>
+                                    <dd>@string.Join(", ", Model.Floors)</dd>
+                                }
+                                <dt>Площадь</dt>
+                                <dd>@($"{Model.Area:0.##} кв.м.")</dd>
+                                @if (Model.Missions.Count > 0)
+                                {
+                                    <dt>Назначение</dt>
+                                    <dd>@AdvConstants.MissionsListToString(Model.Missions)</dd>
+                                }
+                                else
+                                {
+                                    <dt>Назначение</dt>
+                                    <dd>@Model.MissionText</dd>
+                                }
+                                <dt>Срок аренды</dt>
+                                <dd>@Model.MakeTermString()</dd>
+                                @if (Model.PricePerMonth > 0 && Model.PricePerYear > 0)
+                                {
+                                    <dt>Аренда в месяц</dt>
+                                    <dd>@TextUtilites.HumanizeNumber(Model.PricePerMonth) руб.</dd>
+                                    <dt>Аренда в год</dt>
+                                    <dd>@TextUtilites.HumanizeNumber(Model.PricePerYear) руб.</dd>
+                                }
+                                else if (Model.ContractFee > 0)
+                                {
+                                    <dt>Цена за договор</dt>
+                                    <dd>@TextUtilites.HumanizeNumber(Model.ContractFee) руб.</dd>
+                                }
+                                @if (Model.Rooms.HasValue)
+                                {
+                                    <dt>Кол-во комнат</dt>
+                                    <dd>@Model.Rooms.Value</dd>
+                                }
+                                @if (Model.Rings.Count == 0 || Model.Rings.Count > 1)
+                                {
+                                    <dt>Расположение</dt>
+                                    @if (Model.Rings.Count == 0)
+                                    {
+                                        <dd>за МКАДом</dd>
+                                    }
+                                    else if (Model.Rings.Count > 1)
+                                    {
+                                        switch (Model.Rings.First())
+                                        {
+                                            case "sadovoe":
+                                                <dd>в пределах Садового кольца</dd>
+                                                break;
+                                            case "ttk":
+                                                <dd>в пределах Третьего кольца</dd>
+                                                break;
+                                        }
+                                    }
+                                }
+                                @if (Model.HouseInfo != null && !Model.HouseInfo.IsNull())
+                                {
+                                    <dt>Здание</dt>
+                                    <dd>
+                                        @if (!string.IsNullOrWhiteSpace(Model.HouseInfo.ProjectName) &&
+                                        Model.HouseInfo.ProjectName != "нет данных")
+                                        {
+                                            <div>Серия: @Model.HouseInfo.ProjectName</div>
+                                        }
+                                        @if (Model.HouseInfo.Floors > 0)
+                                        {
+                                            <div>Этажность: @Model.HouseInfo.Floors</div>
+                                        }
+                                        @if (Model.HouseInfo.YearOfBuild > 0)
+                                        {
+                                            <div>Год постройки: @Model.HouseInfo.YearOfBuild</div>
+                                        }
+                                        @if (Model.HouseInfo.EntrancesCount > 0)
+                                        {
+                                            <div>Количество подъездов: @Model.HouseInfo.EntrancesCount</div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(Model.HouseInfo.NameOfAuthority))
+                                        {
+                                            <div>Управляющая организация: @Model.HouseInfo.NameOfAuthority</div>
+                                        }
+                                    </dd>
+                                }
+                                <dt>Дата аукциона</dt>
+                                <dd class="@(Model.IsAuctionExpired() ? "expired_auction" : "")">@Model.AuctionDate.ToString("yyyy-MM-dd")</dd>
+                                <dt>Подача документов</dt>
+                                <dd class="@(Model.IsAuctionExpired() ? "expired_auction" : "")">до @Model.ExpireDate.ToString("yyyy-MM-dd")</dd>
+                                <dt>Лот</dt>
+                                <dd>№ @Model.LotNum</dd>
+                                @*if (signInManager.IsSignedIn(User) && User.IsInRole("Admin"))*@
+                                @if (isPaid)
+                                {
+                                    <dt>Номер извещения</dt>
+                                    <dd>@Model.NotificationId</dd>
+                                }
+                                @if (Model.Files.Count > 0)
+                                {
+                                    <dt>Документы</dt>
+                                    <dd>
+                                        <ul class="list-unstyled">
+                                            @foreach (var file in Model.Files)
+                                            {
+                                                <li>
+                                                    <a asp-action="DownloadRentFile"
+                                                       asp-route-id="@file.Salt"
+                                                       asp-route-advid="@Model.Id"
+                                                       asp-route-lotnum="@Model.LotNum"
+                                                       asp-route-lotfile="@file.LotFile">
+                                                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                                                        @file.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="row hidden-print">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-top-20">
+                            @if (Model.RenewAuctionCount > 0)
+                            {
+                                <div class="alert alert-info"><strong>Количество продлений аукциона:</strong> @Model.RenewAuctionCount</div>
+                            }
+
+                            @if (Model.EnvironmentInfo != null)
+                            {
+                                <section class="panel panel-default">
+                                    <div class="panel-heading" id="environmentInfo"><span>Информация об окружении</span></div>
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <ul class="list-group">
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfLivingHousesAround1Km > 0 ? "list-group-item-success" : "")">Домов в радиусе 1 км. <span class="badge">@Model.EnvironmentInfo.AmountOfLivingHousesAround1Km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfLivingHousesAround500m > 0 ? "list-group-item-success" : "")">Домов в радиусе 500 м. <span class="badge">@Model.EnvironmentInfo.AmountOfLivingHousesAround500m</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfLivingApartmentsAround1Km > 0 ? "list-group-item-success" : "")">Квартир в радиусе 1 км. <span class="badge">@Model.EnvironmentInfo.AmountOfLivingApartmentsAround1Km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfLivingApartmentsAround500m > 0 ? "list-group-item-success" : "")">Квартир в радиусе 500 м. <span class="badge">@Model.EnvironmentInfo.AmountOfLivingApartmentsAround500m</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfStStationsAround1Km > 0 ? "list-group-item-success" : "")">Остановок ОТ в радиусе 1 км. <span class="badge">@Model.EnvironmentInfo.AmountOfStStationsAround1Km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfStStationsAround500m > 0 ? "list-group-item-success" : "")">Остановок ОТ в радиусе 500 м. <span class="badge">@Model.EnvironmentInfo.AmountOfStStationsAround500m</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfStRoutesAround1Km > 0 ? "list-group-item-success" : "")">Маршрутов ОТ в радиусе 1 км. <span class="badge">@Model.EnvironmentInfo.AmountOfStRoutesAround1Km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfStRoutesAround500m > 0 ? "list-group-item-success" : "")">Маршрутов ОТ в радиусе 500 м. <span class="badge">@Model.EnvironmentInfo.AmountOfStRoutesAround500m</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfMetroStationAround1km > 0 ? "list-group-item-success" : "")">Станций метро в радиусе 1 км. <span class="badge">@Model.EnvironmentInfo.AmountOfMetroStationAround1km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfParkingAutomatesAround500m > 0 ? "list-group-item-success" : "")">Автоматов платной парковки в радиусе 500 м. <span class="badge">@Model.EnvironmentInfo.AmountOfParkingAutomatesAround500m</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfMetroParkingLotsAround2km > 0 ? "list-group-item-success" : "")">Перехватывающих парковок в радиусе 2 км. <span class="badge">@Model.EnvironmentInfo.AmountOfMetroParkingLotsAround2km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfMFCAround2km > 0 ? "list-group-item-success" : "")">Многофункциональных центров (МФЦ) в радиусе 2 км. <span class="badge">@Model.EnvironmentInfo.AmountOfMFCAround2km</span></li>
+                                                    <li class="list-group-item @(Model.EnvironmentInfo.AmountOfPostOfficesAround2km > 0 ? "list-group-item-success" : "")">Почтовых отделений в радиусе 2 км. <span class="badge">@Model.EnvironmentInfo.AmountOfPostOfficesAround2km</span></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            }
+                            <section class="panel panel-default">
+                                <div class="panel-heading" id="advertOnTheMap"><span>На карте</span></div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div id="YMapsID" style="height:500px"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="row hidden-print">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-top-20">
+                            @if (nearestAdverts.Count > 0)
+                            {
+                                <section class="panel panel-default">
+                                    <div class="panel-heading" id="nearestAdverts"><span>Ближайшие объекты</span></div>
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <ul class="list-unstyled">
+                                                    @foreach (var a in nearestAdverts)
+                                                    {
+                                                        <li class="margin-top-5">
+                                                            <ul class="list-unstyled">
+                                                                <li><a asp-action="RentAdvert" asp-route-id="@a.Id">@(isPaid ? a.AddrString : a.UnpaidAddr())</a></li>
+                                                                <li>Площадь: @($"{a.Area:0.##} кв.м."), Расстояние до объекта: @($"{GeoHelpers.CalcDistance(Model.GeoPoint, a.GeoPoint):0} м.")</li>
+                                                            </ul>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            }
+                            @if (similarAdverts.Count > 0)
+                            {
+                                <section class="panel panel-default">
+                                    <div class="panel-heading" id="similarAdverts"><span>Похожие объекты</span></div>
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <ul class="list-unstyled">
+                                                    @foreach (var a in similarAdverts)
+                                                    {
+                                                        <li class="margin-top-5">
+                                                            <ul class="list-unstyled">
+                                                                <li><a asp-action="RentAdvert" asp-route-id="@a.Id">@(isPaid ? a.AddrString : a.UnpaidAddr())</a></li>
+                                                                <li>Площадь: @($"{a.Area:0.##} кв.м."), Расстояние до объекта: @($"{GeoHelpers.CalcDistance(Model.GeoPoint, a.GeoPoint):0} м.")</li>
+                                                            </ul>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;key=AKZ6GFcBAAAAxvCmGwIAQZAo0uyaJny5TR38Km8N1FWVui8AAAAAAAAAAABZRYzW1j9v9SblERAsLa6S-QWTLA==" type="text/javascript"></script>
+<script type="text/javascript">
+            ymaps.ready(function () {
+                ymaps.geocode(
+                    /* Строка с адресом, который нужно
+                     геокодировать */
+                    "@Model.JustAddrString(isPaid)", {
+                        // - требуемое количество результатов
+                        results: 1
+                    }).then(function (res) {
+                        var myMap = new ymaps.Map("YMapsID", {
+                            // Центр карты
+                            center: res.geoObjects.get(0).geometry.getCoordinates(),
+                            // Коэффициент масштабирования
+                            zoom: 16,
+                            // Тип карты
+                            type: "yandex#map",
+                            controls: ['zoomControl', 'typeSelector',  'fullscreenControl']
+                        });
+                        myMap.geoObjects.add(new ymaps.Placemark(res.geoObjects.get(0).geometry.getCoordinates(), {
+                            balloonContent: '@($"{Model.Area:0.##} кв.м., {AdvConstants.MissionsListToString(Model.Missions)}, {Model.JustAddrString(isPaid)}")'
+                            }, {
+                            preset: 'islands#icon',
+                            iconColor: '#0095b6'
+                        }));
+                    });
+            });
+</script>

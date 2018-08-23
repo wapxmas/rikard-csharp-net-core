@@ -1,0 +1,57 @@
+﻿@inject UserManager<IdentityUser> userManager
+@{ 
+    ViewBag.Title = "Пользователи";
+    var ProlongationTypes = new List<SelectListItem>
+    {
+        new SelectListItem {Text = "Час", Value = "hour"},
+        new SelectListItem {Text = "День", Value = "day"},
+        new SelectListItem {Text = "Неделя", Value = "week"},
+        new SelectListItem {Text = "Месяц", Value = "month"}
+    };
+    var Message = Context.Session.PopString("Message");
+}
+
+<h1 class="text-center">Пользователи</h1>
+
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert alert-info" role="alert">@Message</div>
+}
+
+@foreach (var u in userManager.Users)
+{
+    @if(!u.EmailConfirmed || !u.PhoneNumberConfirmed)
+    {
+        continue;
+    }
+    <div class="panel panel-default">
+        <div class="panel-heading">@u.Email | @u.PhoneNumber | @GetUserExpiredDate(u)</div>
+        <div class="panel-body">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <form asp-action="ProlongService">
+                        <label>Продлить сервис:</label>
+                        @Html.DropDownList("proType", ProlongationTypes, "Выберите")
+                        @Html.Hidden("userId", u.Id)
+                        @Html.Hidden("userEmail", u.Email)
+                        <button class="btn btn-primary" type="submit">Продлить</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+}
+
+@functions {
+    string GetUserExpiredDate(IdentityUser user)
+    {
+        DateTime? ServiceExpired = user.Balance?.ServiceExpired;
+
+        if (!ServiceExpired.HasValue)
+        {
+            ServiceExpired = DateTime.MinValue;
+        }
+
+        return ServiceExpired.Value.ToString("yyyy-MM-dd HH:mm:ss");
+    }
+}

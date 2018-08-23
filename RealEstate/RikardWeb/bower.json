@@ -1,0 +1,9 @@
+{
+  "name": "asp.net",
+  "private": true,
+  "dependencies": {
+    "tether": "v1.4.0",
+    "font-awesome": "Font-Awesome#v4.7.0",
+    "jQuery": "^2.2.4"
+  }
+}
